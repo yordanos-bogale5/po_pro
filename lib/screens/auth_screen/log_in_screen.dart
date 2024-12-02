@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:poker_project/screens/auth_screen/firebase_auth_service.dart';
+import 'package:poker_project/screens/game_screen/home_screen.dart';
+
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   _LoginScreenState createState() => _LoginScreenState();
@@ -11,63 +14,86 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  bool _isLoading = false;
+  final FirebaseAuthService _authService = FirebaseAuthService();
 
-  Future<void> _login() async {
-    setState(() {
-      _isLoading = true;
-    });
-    try {
-      await _auth.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
+  void _login() async {
+    User? user = await _authService.loginWithEmailPassword(
+      _emailController.text,
+      _passwordController.text,
+    );
+
+    if (user != null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen(playerId: '',)),
       );
-      Navigator.pushReplacementNamed(context, '/home'); // Redirect to Home Screen
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Login failed: $e'),
-      ));
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
+    } else {
+      // Show error message
+      print("Login failed");
+    }
+  }
+
+  void _loginWithGoogle() async {
+    User? user = await _authService.loginWithGoogle();
+    if (user != null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen(playerId: '',)),
+      );
+    }
+  }
+
+  void _loginWithFacebook() async {
+    User? user = await _authService.loginWithFacebook();
+    if (user != null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen(playerId: '',)),
+      );
+    }
+  }
+
+  void _resetPassword() {
+    if (_emailController.text.isNotEmpty) {
+      _authService.resetPassword(_emailController.text);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Password reset email sent!")),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Poker Game Login'),
-      ),
+      appBar: AppBar(title: const Text("Login")),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextField(
               controller: _emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
+              decoration: const InputDecoration(labelText: "Email"),
             ),
-            const SizedBox(height: 10),
             TextField(
               controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Password'),
               obscureText: true,
+              decoration: const InputDecoration(labelText: "Password"),
             ),
-            const SizedBox(height: 20),
-            _isLoading
-                ? const CircularProgressIndicator()
-                : ElevatedButton(
-                    onPressed: _login,
-                    child: const Text('Login'),
-                  ),
+            ElevatedButton(
+              onPressed: _login,
+              child: const Text("Login"),
+            ),
+            ElevatedButton(
+              onPressed: _loginWithGoogle,
+              child: const Text("Login with Google"),
+            ),
+            ElevatedButton(
+              onPressed: _loginWithFacebook,
+              child: const Text("Login with Facebook"),
+            ),
             TextButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/signup');
-              },
-              child: const Text('Don\'t have an account? Sign up'),
+              onPressed: _resetPassword,
+              child: const Text("Forgot Password?"),
             ),
           ],
         ),
