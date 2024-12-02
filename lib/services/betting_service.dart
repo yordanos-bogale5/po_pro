@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../constants/game_constants.dart';
 
-
 class BettingService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
