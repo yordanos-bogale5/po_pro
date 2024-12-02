@@ -20,7 +20,9 @@ class TournamentService {
     DocumentSnapshot tournamentSnapshot = await _firestore.collection('tournaments').doc(tournamentId).get();
 
     if (tournamentSnapshot.exists) {
-      List<String> players = List<String>.from(tournamentSnapshot.data()?['players'] ?? []);
+      // Correctly cast the data to a Map<String, dynamic>
+      Map<String, dynamic> data = tournamentSnapshot.data() as Map<String, dynamic>;
+      List<String> players = List<String>.from(data['players'] ?? []);
       players.remove(playerId);
 
       await _firestore.collection('tournaments').doc(tournamentId).update({
@@ -29,7 +31,7 @@ class TournamentService {
 
       if (players.length == 1) {
         // The remaining player is the winner
-        await _declareWinner(tournamentId, players.first);
+        await declareWinner(tournamentId, players.first);
       }
     }
   }
@@ -39,9 +41,11 @@ class TournamentService {
     DocumentSnapshot tournamentSnapshot = await _firestore.collection('tournaments').doc(tournamentId).get();
 
     if (tournamentSnapshot.exists) {
-      List<String> players = List<String>.from(tournamentSnapshot.data()?['players'] ?? []);
-      int pot = tournamentSnapshot.data()?['pot'] ?? 0;
-      String winner = tournamentSnapshot.data()?['winner'] ?? '';
+      // Correctly cast the data to a Map<String, dynamic>
+      Map<String, dynamic> data = tournamentSnapshot.data() as Map<String, dynamic>;
+      List<String> players = List<String>.from(data['players'] ?? []);
+      int pot = data['pot'] ?? 0;
+      String winner = data['winner'] ?? '';
 
       // In a Heads-Up tournament, the winner gets 90% of the pot
       if (players.length == 2 && winner.isNotEmpty) {
@@ -55,7 +59,7 @@ class TournamentService {
   }
 
   // Declare the winner of the tournament
-  Future<void> _declareWinner(String tournamentId, String winnerId) async {
+  Future<void> declareWinner(String tournamentId, String winnerId) async {
     try {
       // Update Firestore to set the winner for the tournament
       await _firestore.collection('tournaments').doc(tournamentId).update({
@@ -72,7 +76,9 @@ class TournamentService {
     DocumentSnapshot tournamentSnapshot = await _firestore.collection('tournaments').doc(tournamentId).get();
 
     if (tournamentSnapshot.exists) {
-      int currentPot = tournamentSnapshot.data()?['pot'] ?? 0;
+      // Correctly cast the data to a Map<String, dynamic>
+      Map<String, dynamic> data = tournamentSnapshot.data() as Map<String, dynamic>;
+      int currentPot = data['pot'] ?? 0;
       await _firestore.collection('tournaments').doc(tournamentId).update({
         'pot': currentPot + amount,
       });
@@ -84,7 +90,9 @@ class TournamentService {
     DocumentSnapshot tournamentSnapshot = await _firestore.collection('tournaments').doc(tournamentId).get();
 
     if (tournamentSnapshot.exists) {
-      int currentRound = tournamentSnapshot.data()?['currentRound'] ?? 0;
+      // Correctly cast the data to a Map<String, dynamic>
+      Map<String, dynamic> data = tournamentSnapshot.data() as Map<String, dynamic>;
+      int currentRound = data['currentRound'] ?? 0;
       await _firestore.collection('tournaments').doc(tournamentId).update({
         'currentRound': currentRound + 1,
       });

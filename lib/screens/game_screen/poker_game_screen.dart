@@ -23,9 +23,10 @@ class PokerGameScreen extends StatefulWidget {
 
 class _PokerGameScreenState extends State<PokerGameScreen> {
   final BettingService _bettingService = BettingService();
-  final BettingTimer _bettingTimer = BettingTimer(duration: 2000); // Set 2000 seconds for each betting round
+  final BettingTimer _bettingTimer =
+      BettingTimer(duration: 2000); // Set 2000 seconds for each betting round
   final TournamentService _tournamentService = TournamentService();
-  
+
   bool _isTimerRunning = false;
   int _remainingTime = 30;
   String _tournamentStatus = "Ongoing";
@@ -49,13 +50,15 @@ class _PokerGameScreenState extends State<PokerGameScreen> {
 
   // Check the status of the tournament from Firestore
   void _checkTournamentStatus() async {
-    DocumentSnapshot tournamentSnapshot =
-        await FirebaseFirestore.instance.collection('tournaments').doc(widget.tournamentId).get();
+    DocumentSnapshot tournamentSnapshot = await FirebaseFirestore.instance
+        .collection('tournaments')
+        .doc(widget.tournamentId)
+        .get();
 
     if (tournamentSnapshot.exists) {
       setState(() {
-        // Safely cast the data to a Map<String, dynamic>
-        Map<String, dynamic>? data = tournamentSnapshot.data() as Map<String, dynamic>?;
+        Map<String, dynamic>? data =
+            tournamentSnapshot.data() as Map<String, dynamic>?;
         _tournamentStatus = data?['status'] ?? 'Ongoing';
         _winner = data?['winner'] ?? '';
       });
@@ -63,9 +66,7 @@ class _PokerGameScreenState extends State<PokerGameScreen> {
   }
 
   void _onTimeUp() {
-    // Handle what happens when the timer runs out (e.g., automatically fold, proceed to next phase)
     _bettingService.fold(widget.roomId, widget.playerId);
-    // Optionally trigger next phase (e.g., next round or showdown)
   }
 
   void _startBettingRound() {
@@ -77,14 +78,13 @@ class _PokerGameScreenState extends State<PokerGameScreen> {
 
   void _eliminatePlayer() async {
     await _tournamentService.eliminatePlayer(widget.tournamentId, widget.playerId);
-    _checkTournamentStatus(); // Update the status after elimination
+    _checkTournamentStatus();
   }
 
   void _endTournament() async {
-  await _tournamentService._declareWinner(widget.tournamentId, widget.playerId);
-  _checkTournamentStatus(); // Declare the winner
-}
-
+    await _tournamentService.declareWinner(widget.tournamentId, widget.playerId);
+    _checkTournamentStatus();
+  }
 
   @override
   void dispose() {
@@ -101,7 +101,7 @@ class _PokerGameScreenState extends State<PokerGameScreen> {
       body: Column(
         children: [
           const Text("Your Hand:"),
-          const Text("Player Hand Goes Here"), // Replace with actual player hand display
+          const Text("Player Hand Goes Here"),
           PokerBettingWidget(roomId: widget.roomId, playerId: widget.playerId),
           const SizedBox(height: 20),
           _isTimerRunning
@@ -110,14 +110,15 @@ class _PokerGameScreenState extends State<PokerGameScreen> {
                   onPressed: _startBettingRound,
                   child: const Text("Start Betting Round"),
                 ),
-          
-          // StreamBuilder for room data
           StreamBuilder<DocumentSnapshot>(
-            stream: FirebaseFirestore.instance.collection('rooms').doc(widget.roomId).snapshots(),
+            stream: FirebaseFirestore.instance
+                .collection('rooms')
+                .doc(widget.roomId)
+                .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
-                // Safely access the room data
-                Map<String, dynamic>? roomData = snapshot.data?.data() as Map<String, dynamic>?;
+                Map<String, dynamic>? roomData =
+                    snapshot.data?.data() as Map<String, dynamic>?;
                 int remainingTime = roomData?['bettingRoundRemainingTime'] ?? 30;
                 return Column(
                   children: [
@@ -129,14 +130,15 @@ class _PokerGameScreenState extends State<PokerGameScreen> {
               }
             },
           ),
-
-          // StreamBuilder for tournament data
           StreamBuilder<DocumentSnapshot>(
-            stream: FirebaseFirestore.instance.collection('tournaments').doc(widget.tournamentId).snapshots(),
+            stream: FirebaseFirestore.instance
+                .collection('tournaments')
+                .doc(widget.tournamentId)
+                .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
-                // Safely cast the tournament data
-                Map<String, dynamic>? data = snapshot.data?.data() as Map<String, dynamic>?;
+                Map<String, dynamic>? data =
+                    snapshot.data?.data() as Map<String, dynamic>?;
                 String type = data?['type'] ?? 'Classic';
                 int currentRound = data?['currentRound'] ?? 1;
                 int pot = data?['pot'] ?? 0;
@@ -152,8 +154,6 @@ class _PokerGameScreenState extends State<PokerGameScreen> {
               }
             },
           ),
-
-          // Tournament control buttons
           ElevatedButton(
             onPressed: _eliminatePlayer,
             child: const Text("Eliminate Player"),

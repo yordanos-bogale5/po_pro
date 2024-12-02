@@ -70,4 +70,6 @@ class MultiplayerGameService {
       'gameState': 'completed',
     });
   }
+
+  joinOrCreateRoom(double buyInAmount) {}
 }

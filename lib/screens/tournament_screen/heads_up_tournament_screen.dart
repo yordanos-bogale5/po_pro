@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
 import 'package:poker_project/screens/game_screen/poker_game_screen.dart';
 import 'package:poker_project/services/multiplayer_service.dart';
 
-
 class HeadsUpTournamentScreen extends StatefulWidget {
+  const HeadsUpTournamentScreen({super.key});
+
   @override
-  _HeadsUpTournamentScreenState createState() =>
-      _HeadsUpTournamentScreenState();
+  _HeadsUpTournamentScreenState createState() => _HeadsUpTournamentScreenState();
 }
 
 class _HeadsUpTournamentScreenState extends State<HeadsUpTournamentScreen> {
-  final MultiplayerService _multiplayerService = MultiplayerService();
+  final MultiplayerGameService _multiplayerService = MultiplayerGameService();
   final double _buyInAmount = 100.0;
   String _statusMessage = "Waiting for an opponent...";
+
+  // Define a Firestore instance
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<void> _joinHeadsUpTournament() async {
     String roomId = await _multiplayerService.joinOrCreateRoom(_buyInAmount);
@@ -25,7 +29,13 @@ class _HeadsUpTournamentScreenState extends State<HeadsUpTournamentScreen> {
       if (snapshot.data()?['isFull'] == true) {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => PokerGameScreen(roomId)),
+          MaterialPageRoute(
+            builder: (context) => PokerGameScreen(
+              roomId: roomId,
+              playerId: '', // Pass the playerId dynamically if available
+              tournamentId: '', // Pass the tournamentId dynamically if available
+            ),
+          ),
         );
       }
     });
@@ -35,7 +45,7 @@ class _HeadsUpTournamentScreenState extends State<HeadsUpTournamentScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Heads-Up Tournament"),
+        title: const Text("Heads-Up Tournament"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -46,7 +56,7 @@ class _HeadsUpTournamentScreenState extends State<HeadsUpTournamentScreen> {
               onPressed: _joinHeadsUpTournament,
               child: Text("Join Heads-Up Tournament (\$$_buyInAmount)"),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Text(_statusMessage),
           ],
         ),

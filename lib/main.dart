@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
-import 'screens/login_screen.dart';
-import 'screens/home_screen.dart';
-import 'services/firebase_auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:provider/provider.dart';
+import 'package:poker_project/screens/auth_screen/log_in_screen.dart';
+import 'package:poker_project/screens/game_screen/poker_game_screen.dart';
+
 
 void main() {
-  runApp(PokerGameApp());
+  runApp(const PokerGameApp());
 }
 
 class PokerGameApp extends StatelessWidget {
+  const PokerGameApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -18,12 +19,14 @@ class PokerGameApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: AuthenticationWrapper(),
+      home: const AuthenticationWrapper(),
     );
   }
 }
 
 class AuthenticationWrapper extends StatelessWidget {
+  const AuthenticationWrapper({super.key});
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
@@ -31,15 +34,13 @@ class AuthenticationWrapper extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.active) {
           if (snapshot.hasData) {
-            // User is signed in, navigate to home screen
-            return HomeScreen(userId: snapshot.data!.uid);
+            return const PokerGameScreen(roomId: '', playerId: '', tournamentId: '',);
           } else {
-            // User is not signed in, navigate to login screen
-            return LoginScreen();
+            return const LoginScreen();
           }
         } else {
           // Loading state
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         }
       },
     );
